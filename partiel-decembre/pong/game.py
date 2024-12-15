@@ -1,7 +1,6 @@
 import time
 from paddle import Paddle
 from graphism import Graphism
-import tkinter as tk
 
 class Game:
     def __init__(self):
@@ -9,7 +8,7 @@ class Game:
         self.width = 800
         self.height = 600
         self.graphism = Graphism(self.width, self.height)
-
+        
         # Création des raquettes
         self.left_paddle = Paddle(50, self.height // 2 - 50, 10, 100, 20)
         self.right_paddle = Paddle(self.width - 60, self.height // 2 - 50, 10, 100, 20)
@@ -28,13 +27,8 @@ class Game:
         # Lier les touches
         self.graphism.bind_key('<KeyPress-Up>', self.move_right_paddle_up)
         self.graphism.bind_key('<KeyPress-Down>', self.move_right_paddle_down)
-        self.graphism.bind_key('<KeyPress-w>', self.move_left_paddle_up)
+        self.graphism.bind_key('<KeyPress-z>', self.move_left_paddle_up)
         self.graphism.bind_key('<KeyPress-s>', self.move_left_paddle_down)
-
-        # Créer une fenêtre de jeu principale
-        self.window = tk.Tk()
-        self.window.title("Jeu Pong")
-        self.window.protocol("WM_DELETE_WINDOW", self.quit_game)
 
     def move_left_paddle_up(self, event):
         """ Déplacer la raquette gauche vers le haut """
@@ -88,7 +82,7 @@ class Game:
     def draw(self):
         """ Dessiner les éléments du jeu (raquettes, balle, score) """
         self.graphism.clear()
-
+        
         # Dessiner les raquettes
         left_x1, left_y1, left_x2, left_y2 = self.left_paddle.get_position()
         right_x1, right_y1, right_x2, right_y2 = self.right_paddle.get_position()
@@ -98,53 +92,20 @@ class Game:
         # Dessiner la balle
         self.graphism.draw_oval(self.ball_x - self.ball_radius, self.ball_y - self.ball_radius,
                                 self.ball_x + self.ball_radius, self.ball_y + self.ball_radius, "green")
-
+        
         # Afficher le score
         self.graphism.canvas.create_text(self.width // 4, 30, text=str(self.left_score), font=("Arial", 30), fill="blue")
         self.graphism.canvas.create_text(3 * self.width // 4, 30, text=str(self.right_score), font=("Arial", 30), fill="red")
 
     def check_victory(self):
         """ Vérifie si un joueur a gagné """
-        if self.left_score >= 1:
-            self.show_end_screen("Joueur Gauche Gagnant!")
+        if self.left_score >= 2:
+            self.graphism.canvas.create_text(self.width // 2, self.height // 2, text="Joueur Gagnant!", font=("Arial", 40), fill="blue")
             return True
-        elif self.right_score >= 1:
-            self.show_end_screen("Joueur Droit Gagnant!")
+        elif self.right_score >= 2:
+            self.graphism.canvas.create_text(self.width // 2, self.height // 2, text="Joueur Gagnant!", font=("Arial", 40), fill="red")
             return True
         return False
-
-    def show_end_screen(self, winner_text):
-        """ Affiche l'écran de fin de jeu avec le message du gagnant """
-        self.graphism.canvas.create_rectangle(0, 0, self.width, self.height, fill="black", outline="black", width=0)
-        self.graphism.canvas.create_text(self.width // 2, self.height // 3, text=winner_text, font=("Arial", 40), fill="white")
-        self.graphism.canvas.create_text(self.width // 2, self.height // 2, text="Appuyez sur 'Rejouer' ou 'Quitter'", font=("Arial", 20), fill="white")
-        self.graphism.update()
-
-        # Ajouter les boutons pour rejouer ou quitter
-        self.add_end_game_buttons()
-
-    def add_end_game_buttons(self):
-        """ Crée les boutons 'Rejouer' et 'Quitter' """
-        replay_button = tk.Button(self.window, text="Rejouer", font=("Arial", 20), command=self.reset_game)
-        replay_button.pack(pady=10)
-
-        quit_button = tk.Button(self.window, text="Quitter", font=("Arial", 20), command=self.quit_game)
-        quit_button.pack(pady=10)
-
-    def reset_game(self):
-        """ Réinitialise le jeu pour recommencer """
-        self.left_score = 0
-        self.right_score = 0
-        self.ball_x = self.width // 2
-        self.ball_y = self.height // 2
-        self.ball_speed_x = 5
-        self.ball_speed_y = 5
-        self.graphism.clear()
-        self.run()
-
-    def quit_game(self):
-        """ Quitte le jeu """
-        self.window.quit()
 
     def run(self):
         """ Boucle du jeu """
@@ -163,6 +124,3 @@ class Game:
             elapsed_time = time.time() - start_time
             sleep_time = max(0, 0.016 - elapsed_time)  # Pour environ 60 FPS
             time.sleep(sleep_time)
-
-        # Lancer la fenêtre Tkinter après la fin du jeu
-        self.window.mainloop()
